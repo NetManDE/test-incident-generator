@@ -1,0 +1,53 @@
+{
+  "_comment": "Configuration file for the Incident Generator",
+  "_instructions": "1. Copy this file to 'config.json'",
+  "_instructions2": "2. Fill in the values for your desired LLM provider",
+  "_instructions3": "3. Unused providers can remain empty",
+
+  "llm_provider": "gemini",
+  "_llm_provider_options": "Choose: 'ollama', 'openai' or 'gemini'",
+
+  "ollama": {
+    "url": "http://localhost:11434/api/generate",
+    "model": "llama2",
+    "_comment": "For local Ollama installation"
+  },
+
+  "openai": {
+    "api_key": "",
+    "model": "gpt-3.5-turbo",
+    "_comment": "Requires OpenAI API Key",
+    "_model_options": "e.g., gpt-4, gpt-4-turbo, gpt-3.5-turbo"
+  },
+
+  "gemini": {
+    "api_key": "",
+    "model": "gemini-2.0-flash-live",
+    "_comment": "Google Gemini API - gemini-2.0-flash-live has no rate limit",
+    "_model_options": "e.g., gemini-pro, gemini-2.0-flash-exp, gemini-2.0-flash-live"
+  },
+
+  "generation": {
+    "batch_size": 5,
+    "_batch_size_comment": "Number of incidents per LLM request (1-20 recommended)"
+  },
+
+  "categories": {
+    "_comment": "Define incident categories - leave empty to let LLM generate freely",
+    "top_categories": ["Hardware", "Software", "Network", "Security", "Access Management"],
+    "sub_categories": {
+      "Hardware": ["Desktop", "Laptop", "Server", "Printer", "Monitor", "Peripheral"],
+      "Software": ["Application", "Operating System", "Database", "Email", "Web Browser"],
+      "Network": ["Router", "Switch", "Firewall", "VPN", "WiFi", "Internet Connection"],
+      "Security": ["Virus/Malware", "Account Lockout", "Phishing", "Unauthorized Access"],
+      "Access Management": ["Password Reset", "Access Request", "Permission Issue", "Account Creation"]
+    },
+    "specific_categories": {
+      "Hardware": ["Device not working", "Device overheating", "Hardware failure", "Peripheral connection issue"],
+      "Software": ["Application crash", "Software not responding", "Installation failed", "Update required"],
+      "Network": ["No network connection", "Slow connection", "Cannot access network drive", "VPN connection failed"],
+      "Security": ["Suspected virus infection", "Account locked", "Security alert", "Suspicious activity"],
+      "Access Management": ["Cannot log in", "Forgot password", "Need access to resource", "Access denied"]
+    }
+  }
+}

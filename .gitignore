@@ -1,0 +1,31 @@
+# Python Virtual Environment
+venv/
+env/
+.venv/
+
+# Python Cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Konfigurationsdatei mit API-Schlüsseln (NIEMALS committen!)
+config.json
+
+# Temporäre Daten
+temp_incidents.json
+
+# Generierte Output-Dateien
+incidents_export.xlsx
+
+# IDE und Editor Dateien
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Logs
+*.log

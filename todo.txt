@@ -1,0 +1,24 @@
+Erstelle ein vollständiges, hochgradig flexibles und kommentiertes Python-Skript, das synthetische Incident-Testdaten generiert und in eine XLSX-Datei exportiert.
+
+**Kernanforderung:** Das Skript muss die Generierung über drei wählbare LLM-APIs unterstützen: Ollama/Custom (via requests), OpenAI/ChatGPT (via openai Bibliothek) und Google Gemini (via google-genai Bibliothek).
+
+**Ablauf-Details:**
+1.  Implementiere eine Funktion `get_llm_client()` zur Auswahl des Anbieters und zur Abfrage der notwendigen API-Schlüssel/URLs vom Benutzer.
+2.  Implementiere eine Funktion `generate_incident_batch(client, num_incidents_to_generate, existing_incidents_count)` die den gewählten Client verwendet und die folgenden 21 Spalten als JSON-Array von Objekten zurückfordert:
+    * Nummer (Muss fortlaufend generiert werden, basierend auf existing_incidents_count)
+    * Top-Category, Sub-Category, Category
+    * Effort (Geschätzte Stunden)
+    * State (New, In Progress, Resolved, Closed)
+    * Correlation ID
+    * Kurzbeschreibung, Langbeschreibung
+    * Created, Opened, Closed (Datum/Uhrzeit)
+    * Priority, Urgency, Impact
+    * Assignment group
+    * Resolution code, Resolution notes (abhängig vom State)
+    * Resolve time, Business duration, Business resolve time (Minuten)
+
+3.  Verwende einen robusten System-Prompt, um das LLM in die Rolle eines Incident-Generators zu versetzen.
+4.  Implementiere die Schleife und die **Zwischenspeicherung** in eine temporäre JSON-Datei (`temp_incidents.json`) nach jedem Batch von 5 generierten Incidents.
+5.  Der finale Schritt ist die Erstellung eines Pandas DataFrames und der Export in die Datei `incidents_export.xlsx`, wobei die Spaltenüberschriften exakt den 21 deutschen Begriffen entsprechen müssen.
+
+Stelle sicher, dass alle notwendigen Abhängigkeiten (Bibliotheken) im Code klar benannt sind.
