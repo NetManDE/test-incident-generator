@@ -1,8 +1,15 @@
 @echo off
 REM run.bat - Activates Virtual Environment and starts the Incident Generator (Windows)
+REM Usage: run.bat [--debug]
 
 set VENV_DIR=venv
 set PYTHON_SCRIPT=incident_generator.py
+
+REM Parse command line arguments
+set DEBUG_FLAG=
+if /i "%1"=="--debug" set DEBUG_FLAG=--debug
+if /i "%1"=="-d" set DEBUG_FLAG=--debug
+if defined DEBUG_FLAG echo Debug mode enabled
 
 REM Check if Virtual Environment exists
 if not exist "%VENV_DIR%" (
@@ -36,7 +43,7 @@ echo [OK] Virtual Environment activated
 echo.
 
 REM Start Python script
-python "%PYTHON_SCRIPT%"
+python "%PYTHON_SCRIPT%" %DEBUG_FLAG%
 
 REM Save exit code
 set EXIT_CODE=%errorlevel%

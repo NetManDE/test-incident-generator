@@ -234,6 +234,43 @@ chmod +x setup.sh run.sh  # Make scripts executable (first time only)
 
 ## Advanced Usage
 
+### Debug Mode
+
+Enable debug mode to see detailed API interactions and troubleshoot issues:
+
+**Linux/Mac:**
+```bash
+./run.sh --debug
+# or
+./run.sh -d
+```
+
+**Windows:**
+```cmd
+run.bat --debug
+REM or
+run.bat -d
+```
+
+**Direct Python:**
+```bash
+python incident_generator.py --debug
+```
+
+**Debug output shows:**
+- Complete system and user prompts sent to the LLM
+- Raw API responses before parsing
+- JSON parsing steps
+- Sample of generated incident data
+- Configuration details (API keys are hidden)
+
+**Use debug mode when:**
+- Troubleshooting generation errors
+- Verifying prompt content
+- Checking API responses
+- Understanding what data is being sent/received
+- Testing new configurations
+
 ### Resume Generation
 
 If generation is interrupted:
@@ -304,9 +341,11 @@ pip install google-generativeai
 ### JSON Parse Error
 
 The LLM returned invalid JSON. Possible solutions:
+- **Run in debug mode** to see the exact response: `./run.sh --debug`
 - Use a more reliable model (e.g., `gemini-2.0-flash-live`)
 - Reduce the batch size
 - Try again (sometimes a temporary issue)
+- Check the debug output to see what the LLM actually returned
 
 ### Rate Limit Exceeded (OpenAI)
 

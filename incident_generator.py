@@ -17,6 +17,7 @@ pip install pandas openpyxl requests openai google-generativeai
 import json
 import os
 import sys
+import argparse
 from datetime import datetime
 from typing import Dict, List, Any, Optional
 import requests
@@ -44,6 +45,7 @@ CONFIG_FILE = "config.json"
 TEMP_FILE = "temp_incidents.json"
 OUTPUT_FILE = "incidents_export.xlsx"
 BATCH_SIZE = 5  # Default, will be overridden from config if present
+DEBUG = False  # Global debug flag, set via command line argument
 
 # The 21 columns in the desired order
 COLUMN_NAMES = [
@@ -386,6 +388,17 @@ def generate_incident_batch(client_config: Dict[str, Any], num_incidents: int, e
 
     print(f"\n→ Generating {num_incidents} incidents (Numbers {existing_count + 1} to {existing_count + num_incidents})...")
 
+    if DEBUG:
+        print("\n" + "="*80)
+        print("DEBUG: SYSTEM PROMPT")
+        print("="*80)
+        print(SYSTEM_PROMPT)
+        print("\n" + "="*80)
+        print("DEBUG: USER PROMPT")
+        print("="*80)
+        print(user_prompt)
+        print("="*80 + "\n")
+
     try:
         if client_type == "ollama":
             # Ollama/Custom API Request
@@ -433,17 +446,34 @@ def generate_incident_batch(client_config: Dict[str, Any], num_incidents: int, e
         # Parse JSON Response
         content = content.strip()
 
+        if DEBUG:
+            print("\n" + "="*80)
+            print("DEBUG: RAW LLM RESPONSE")
+            print("="*80)
+            print(content)
+            print("="*80 + "\n")
+
         # Remove potential markdown code blocks
         if content.startswith("```"):
+            if DEBUG:
+                print("DEBUG: Removing markdown code blocks from response")
             lines = content.split("\n")
             lines = [l for l in lines if not l.startswith("```")]
             content = "\n".join(lines).strip()
 
         # Parse JSON
+        if DEBUG:
+            print("DEBUG: Parsing JSON response...")
         incidents = json.loads(content)
 
         if not isinstance(incidents, list):
             raise ValueError("LLM response is not a JSON array")
+
+        if DEBUG:
+            print(f"DEBUG: Successfully parsed {len(incidents)} incidents")
+            print("DEBUG: First incident sample:")
+            if incidents:
+                print(json.dumps(incidents[0], indent=2))
 
         print(f"✓ {len(incidents)} incidents successfully generated")
         return incidents
@@ -515,16 +545,67 @@ def export_to_xlsx(incidents: List[Dict[str, Any]]) -> None:
         raise
 
 
+def parse_arguments():
+    """
+    Parse command line arguments.
+
+    Returns:
+        Parsed arguments
+    """
+    parser = argparse.ArgumentParser(
+        description='Generate synthetic incident test data using LLMs',
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  python incident_generator.py                 # Normal mode
+  python incident_generator.py --debug         # Debug mode with verbose output
+  python incident_generator.py -d              # Debug mode (short flag)
+
+For more information, see README.md
+        """
+    )
+    parser.add_argument(
+        '-d', '--debug',
+        action='store_true',
+        help='Enable debug mode to see API calls and detailed logging'
+    )
+    return parser.parse_args()
+
+
 def main():
     """
     Main function of the incident generator.
     """
+    # Parse command line arguments
+    args = parse_arguments()
+
+    # Set global DEBUG flag
+    global DEBUG
+    DEBUG = args.debug
+
+    if DEBUG:
+        print("\n" + "="*60)
+        print("DEBUG MODE ENABLED")
+        print("="*60)
+        print("Debug output will show:")
+        print("  - System and user prompts sent to LLM")
+        print("  - Raw API responses")
+        print("  - JSON parsing details")
+        print("  - Sample generated data")
+        print("="*60 + "\n")
+
     print("\n" + "="*60)
     print("WELCOME TO THE INCIDENT TEST DATA GENERATOR")
     print("="*60)
 
     # Load configuration
     config = load_config()
+
+    if DEBUG and config:
+        print("\nDEBUG: Loaded configuration:")
+        # Don't print API keys
+        safe_config = {k: v if k not in ['gemini', 'openai'] else '***' for k, v in config.items()}
+        print(json.dumps(safe_config, indent=2))
 
     # Set BATCH_SIZE from config if available
     global BATCH_SIZE

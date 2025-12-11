@@ -1,9 +1,17 @@
 #!/bin/bash
 
 # run.sh - Activates Virtual Environment and starts the Incident Generator
+# Usage: ./run.sh [--debug]
 
 VENV_DIR="venv"
 PYTHON_SCRIPT="incident_generator.py"
+
+# Parse command line arguments
+DEBUG_FLAG=""
+if [ "$1" = "--debug" ] || [ "$1" = "-d" ]; then
+    DEBUG_FLAG="--debug"
+    echo "Debug mode enabled"
+fi
 
 # Check if Virtual Environment exists
 if [ ! -d "$VENV_DIR" ]; then
@@ -34,7 +42,7 @@ echo "✓ Virtual Environment activated"
 echo ""
 
 # Start Python script
-python3 "$PYTHON_SCRIPT"
+python3 "$PYTHON_SCRIPT" $DEBUG_FLAG
 
 # Save exit code
 EXIT_CODE=$?
