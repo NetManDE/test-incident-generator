@@ -13,10 +13,27 @@ Generates synthetic IT incident test data using LLMs (Large Language Models) and
 
 ## Quick Start
 
+### Prerequisites (Optional)
+
+**For Windows users without Python/Ollama:**
+```cmd
+install-prerequisites.bat
+```
+
+This helps you install:
+- Python 3.12
+- Ollama (optional, for local LLM)
+
 ### 1. One-Time Setup
 
+**Linux/Mac:**
 ```bash
 ./setup.sh
+```
+
+**Windows:**
+```cmd
+setup.bat
 ```
 
 This creates:
@@ -47,8 +64,14 @@ Edit `config.json` and add your API key:
 
 ### 3. Start Generator
 
+**Linux/Mac:**
 ```bash
 ./run.sh
+```
+
+**Windows:**
+```cmd
+run.bat
 ```
 
 ## Supported LLM Providers
@@ -180,28 +203,72 @@ If no `config.json` is present, the script will ask interactively for all necess
 - **`incidents_export.xlsx`**: Final Excel file with all incidents
 - **`temp_incidents.json`**: Temporary intermediate storage (automatic backup)
 
+## Platform-Specific Notes
+
+### Windows Users
+
+**Running Batch Files:**
+- Double-click the `.bat` files, or
+- Run from Command Prompt: `install-prerequisites.bat`, `setup.bat`, `run.bat`
+
+**Important:**
+- Make sure to check "Add Python to PATH" during Python installation
+- If you see "Python not found" after installation, restart your terminal
+- The scripts use `cmd` syntax (not PowerShell)
+
+**Prerequisites Installation:**
+The `install-prerequisites.bat` script will:
+1. Check if Python is installed
+2. Download and install Python 3.12 if needed
+3. Optionally download and install Ollama
+4. Guide you through the setup process
+
+### Linux/Mac Users
+
+**Running Shell Scripts:**
+```bash
+chmod +x setup.sh run.sh  # Make scripts executable (first time only)
+./setup.sh                 # Run setup
+./run.sh                   # Run generator
+```
+
 ## Advanced Usage
 
 ### Resume Generation
 
 If generation is interrupted:
 
+**Linux/Mac:**
 ```bash
 ./run.sh
+```
+
+**Windows:**
+```cmd
+run.bat
 ```
 
 The script automatically loads `temp_incidents.json` and resumes generation.
 
 ### Manually Activate venv
 
+**Linux/Mac:**
 ```bash
 source venv/bin/activate
 python3 incident_generator.py
 ```
 
+**Windows:**
+```cmd
+venv\Scripts\activate.bat
+python incident_generator.py
+```
+
 ### Change Batch Size at Runtime
 
-Edit `config.json` and restart `./run.sh`.
+Edit `config.json` and restart the generator:
+- Linux/Mac: `./run.sh`
+- Windows: `run.bat`
 
 ## Dependencies
 
