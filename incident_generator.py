@@ -21,6 +21,8 @@ import argparse
 from datetime import datetime
 from typing import Dict, List, Any, Optional
 import requests
+from concurrent.futures import ThreadPoolExecutor, as_completed
+import threading
 
 try:
     import pandas as pd
@@ -45,7 +47,9 @@ CONFIG_FILE = "config.json"
 TEMP_FILE = "temp_incidents.json"
 OUTPUT_FILE = "incidents_export.xlsx"
 BATCH_SIZE = 5  # Default, will be overridden from config if present
+NUM_WORKERS = 3  # Default number of parallel workers, will be overridden from config if present
 DEBUG = False  # Global debug flag, set via command line argument
+progress_lock = threading.Lock()  # Lock for thread-safe progress updates
 
 # The 21 columns in the desired order
 COLUMN_NAMES = [
@@ -386,7 +390,8 @@ def generate_incident_batch(client_config: Dict[str, Any], num_incidents: int, e
     user_prompt = generate_user_prompt(num_incidents, existing_count, config)
     client_type = client_config["type"]
 
-    print(f"\n→ Generating {num_incidents} incidents (Numbers {existing_count + 1} to {existing_count + num_incidents})...")
+    with progress_lock:
+        print(f"\n→ Generating {num_incidents} incidents (Numbers {existing_count + 1} to {existing_count + num_incidents})...")
 
     if DEBUG:
         print("\n" + "="*80)
@@ -475,12 +480,14 @@ def generate_incident_batch(client_config: Dict[str, Any], num_incidents: int, e
             if incidents:
                 print(json.dumps(incidents[0], indent=2))
 
-        print(f"✓ {len(incidents)} incidents successfully generated")
+        with progress_lock:
+            print(f"✓ {len(incidents)} incidents successfully generated (Thread: {threading.current_thread().name})")
         return incidents
 
     except Exception as e:
-        print(f"✗ Error during generation: {str(e)}")
-        print(f"Response content (first 500 chars): {content[:500] if 'content' in locals() else 'N/A'}")
+        with progress_lock:
+            print(f"✗ Error during generation: {str(e)}")
+            print(f"Response content (first 500 chars): {content[:500] if 'content' in locals() else 'N/A'}")
         raise
 
 
@@ -607,11 +614,15 @@ def main():
         safe_config = {k: v if k not in ['gemini', 'openai'] else '***' for k, v in config.items()}
         print(json.dumps(safe_config, indent=2))
 
-    # Set BATCH_SIZE from config if available
-    global BATCH_SIZE
-    if config and "generation" in config and "batch_size" in config["generation"]:
-        BATCH_SIZE = config["generation"]["batch_size"]
-        print(f"\n✓ Batch size from configuration: {BATCH_SIZE}")
+    # Set BATCH_SIZE and NUM_WORKERS from config if available
+    global BATCH_SIZE, NUM_WORKERS
+    if config and "generation" in config:
+        if "batch_size" in config["generation"]:
+            BATCH_SIZE = config["generation"]["batch_size"]
+            print(f"\n✓ Batch size from configuration: {BATCH_SIZE}")
+        if "num_workers" in config["generation"]:
+            NUM_WORKERS = config["generation"]["num_workers"]
+            print(f"✓ Parallel workers from configuration: {NUM_WORKERS}")
 
     # Client configuration
     client_config = get_llm_client(config)
@@ -652,25 +663,54 @@ def main():
     print(f"Already present: {existing_count}")
     print(f"Still to generate: {remaining}")
     print(f"Batch size: {BATCH_SIZE}")
+    print(f"Parallel workers: {NUM_WORKERS}")
     print("="*60)
 
-    # Generation loop
+    # Generation loop with parallel execution
     try:
-        while len(all_incidents) < total_incidents:
-            # Calculate batch size (not more than remaining incidents)
-            remaining = total_incidents - len(all_incidents)
-            current_batch_size = min(BATCH_SIZE, remaining)
+        with ThreadPoolExecutor(max_workers=NUM_WORKERS) as executor:
+            while len(all_incidents) < total_incidents:
+                # Calculate how many batches we can submit in parallel
+                remaining = total_incidents - len(all_incidents)
 
-            # Generate batch
-            batch = generate_incident_batch(client_config, current_batch_size, len(all_incidents), config)
+                # Submit multiple batch jobs
+                futures = []
+                for i in range(min(NUM_WORKERS, (remaining + BATCH_SIZE - 1) // BATCH_SIZE)):
+                    if len(all_incidents) + (i * BATCH_SIZE) >= total_incidents:
+                        break
 
-            # Add to total list
-            all_incidents.extend(batch)
+                    current_batch_size = min(BATCH_SIZE, total_incidents - len(all_incidents) - (i * BATCH_SIZE))
+                    if current_batch_size <= 0:
+                        break
 
-            # Save intermediate results
-            save_incidents_to_temp(all_incidents)
+                    # Calculate starting count for this batch
+                    batch_start_count = len(all_incidents) + (i * BATCH_SIZE)
 
-            print(f"  Progress: {len(all_incidents)}/{total_incidents} incidents")
+                    # Submit batch generation to thread pool
+                    future = executor.submit(
+                        generate_incident_batch,
+                        client_config,
+                        current_batch_size,
+                        batch_start_count,
+                        config
+                    )
+                    futures.append(future)
+
+                # Collect results as they complete
+                for future in as_completed(futures):
+                    try:
+                        batch = future.result()
+                        all_incidents.extend(batch)
+
+                        # Save intermediate results (thread-safe)
+                        with progress_lock:
+                            save_incidents_to_temp(all_incidents)
+                            print(f"  Progress: {len(all_incidents)}/{total_incidents} incidents")
+
+                    except Exception as e:
+                        with progress_lock:
+                            print(f"✗ Batch generation failed: {str(e)}")
+                        # Continue with other batches
 
         print("\n" + "="*60)
         print("✓ GENERATION COMPLETED")

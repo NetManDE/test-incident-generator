@@ -29,25 +29,94 @@
 
   "generation": {
     "batch_size": 5,
-    "_batch_size_comment": "Number of incidents per LLM request (1-20 recommended)"
+    "_batch_size_comment": "Number of incidents per LLM request (1-20 recommended)",
+    "num_workers": 3,
+    "_num_workers_comment": "Number of parallel threads for batch generation (1-5 recommended, requires good GPU/CPU)"
   },
 
   "categories": {
     "_comment": "Define incident categories - leave empty to let LLM generate freely",
-    "top_categories": ["Hardware", "Software", "Network", "Security", "Access Management"],
+    "_example_1": "For general IT support, use: Hardware, Software, Network, Security, Access Management",
+    "_example_2": "For Cloud & Application Management focus, use the configuration below (recommended)",
+    "top_categories": ["Cloud Applications", "Application Management", "Business Applications", "Database", "Access Management"],
     "sub_categories": {
-      "Hardware": ["Desktop", "Laptop", "Server", "Printer", "Monitor", "Peripheral"],
-      "Software": ["Application", "Operating System", "Database", "Email", "Web Browser"],
-      "Network": ["Router", "Switch", "Firewall", "VPN", "WiFi", "Internet Connection"],
-      "Security": ["Virus/Malware", "Account Lockout", "Phishing", "Unauthorized Access"],
-      "Access Management": ["Password Reset", "Access Request", "Permission Issue", "Account Creation"]
+      "Cloud Applications": ["Microsoft 365", "Azure Services", "AWS Services", "Google Workspace", "Salesforce", "ServiceNow", "Cloud Storage", "Collaboration Tools"],
+      "Application Management": ["Web Application", "Mobile Application", "API/Integration", "Application Performance", "Microservices"],
+      "Business Applications": ["ERP System", "CRM System", "HR System", "Finance Application", "Workflow Application", "Analytics Platform"],
+      "Database": ["Cloud Database", "Database Connection", "Database Performance", "Data Access", "Query Issue"],
+      "Access Management": ["Cloud Access", "Application Access", "User Permissions", "License Management", "SSO/MFA"]
     },
     "specific_categories": {
-      "Hardware": ["Device not working", "Device overheating", "Hardware failure", "Peripheral connection issue"],
-      "Software": ["Application crash", "Software not responding", "Installation failed", "Update required"],
-      "Network": ["No network connection", "Slow connection", "Cannot access network drive", "VPN connection failed"],
-      "Security": ["Suspected virus infection", "Account locked", "Security alert", "Suspicious activity"],
-      "Access Management": ["Cannot log in", "Forgot password", "Need access to resource", "Access denied"]
+      "Cloud Applications": [
+        "Microsoft Teams not loading",
+        "Outlook/Exchange connection error",
+        "SharePoint site not accessible",
+        "OneDrive sync failed",
+        "Azure Portal timeout",
+        "Azure Function not executing",
+        "Azure DevOps pipeline failed",
+        "AWS Lambda function error",
+        "AWS S3 bucket access denied",
+        "EC2 instance not responding",
+        "Salesforce dashboard not loading",
+        "Salesforce API rate limit exceeded",
+        "ServiceNow workflow stuck",
+        "ServiceNow catalog item unavailable",
+        "Google Drive file sharing issue",
+        "Google Meet connection problem",
+        "Zoom meeting connection failed",
+        "Slack notifications not working",
+        "Cloud backup failed",
+        "Cloud storage quota exceeded"
+      ],
+      "Application Management": [
+        "Application not responding",
+        "Slow application performance",
+        "Application timeout error",
+        "Feature not working correctly",
+        "API endpoint not responding",
+        "Service unavailable",
+        "Application deployment failed",
+        "Microservice health check failing",
+        "Container restart loop",
+        "Application memory leak",
+        "API gateway error",
+        "Load balancer issue"
+      ],
+      "Business Applications": [
+        "SAP transaction error",
+        "SAP GUI connection failed",
+        "CRM data sync issue",
+        "ERP module not accessible",
+        "Workflow stuck in pending",
+        "Report generation failed",
+        "Power BI dashboard error",
+        "Tableau visualization not loading",
+        "Business intelligence query timeout",
+        "Integration with external system failed"
+      ],
+      "Database": [
+        "Azure SQL connection timeout",
+        "RDS database unreachable",
+        "CosmosDB query slow",
+        "DynamoDB throttling error",
+        "Cannot connect to database",
+        "Query timeout",
+        "Database connection pool exhausted",
+        "Slow query performance",
+        "Data retrieval error"
+      ],
+      "Access Management": [
+        "Cannot access cloud application",
+        "Azure AD authentication failed",
+        "AWS IAM permission denied",
+        "SSO authentication failed",
+        "MFA not receiving code",
+        "License limit reached",
+        "User role assignment issue",
+        "Conditional access blocking login",
+        "API key expired"
+      ]
     }
   }
 }
