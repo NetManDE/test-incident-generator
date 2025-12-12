@@ -48,6 +48,7 @@ TEMP_FILE = "temp_incidents.json"
 OUTPUT_FILE = "incidents_export.xlsx"
 BATCH_SIZE = 5  # Default, will be overridden from config if present
 NUM_WORKERS = 3  # Default number of parallel workers, will be overridden from config if present
+REQUEST_TIMEOUT = 300  # Default timeout in seconds (5 minutes), will be overridden from config if present
 DEBUG = False  # Global debug flag, set via command line argument
 progress_lock = threading.Lock()  # Lock for thread-safe progress updates
 
@@ -414,7 +415,7 @@ def generate_incident_batch(client_config: Dict[str, Any], num_incidents: int, e
                     "prompt": f"{SYSTEM_PROMPT}\n\n{user_prompt}",
                     "stream": False
                 },
-                timeout=120
+                timeout=REQUEST_TIMEOUT
             )
             response.raise_for_status()
 
@@ -614,8 +615,8 @@ def main():
         safe_config = {k: v if k not in ['gemini', 'openai'] else '***' for k, v in config.items()}
         print(json.dumps(safe_config, indent=2))
 
-    # Set BATCH_SIZE and NUM_WORKERS from config if available
-    global BATCH_SIZE, NUM_WORKERS
+    # Set BATCH_SIZE, NUM_WORKERS, and REQUEST_TIMEOUT from config if available
+    global BATCH_SIZE, NUM_WORKERS, REQUEST_TIMEOUT
     if config and "generation" in config:
         if "batch_size" in config["generation"]:
             BATCH_SIZE = config["generation"]["batch_size"]
@@ -623,6 +624,9 @@ def main():
         if "num_workers" in config["generation"]:
             NUM_WORKERS = config["generation"]["num_workers"]
             print(f"✓ Parallel workers from configuration: {NUM_WORKERS}")
+        if "request_timeout" in config["generation"]:
+            REQUEST_TIMEOUT = config["generation"]["request_timeout"]
+            print(f"✓ Request timeout from configuration: {REQUEST_TIMEOUT}s")
 
     # Client configuration
     client_config = get_llm_client(config)

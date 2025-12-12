@@ -31,7 +31,9 @@
     "batch_size": 5,
     "_batch_size_comment": "Number of incidents per LLM request (1-20 recommended)",
     "num_workers": 3,
-    "_num_workers_comment": "Number of parallel threads for batch generation (1-5 recommended, requires good GPU/CPU)"
+    "_num_workers_comment": "Number of parallel threads for batch generation (1-5 recommended, requires good GPU/CPU)",
+    "request_timeout": 300,
+    "_request_timeout_comment": "Timeout for LLM API requests in seconds (default: 300 = 5 minutes). Increase if using large models or parallel processing."
   },
 
   "categories": {
